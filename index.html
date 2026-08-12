@@ -1,100 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google Sheets Connected App</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All Your Habits in One Dashboard</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: #f4f6f8; color: #333; padding: 20px; display: flex; justify-content: center; }
-    .container { background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-    h2 { margin-bottom: 20px; color: #1a73e8; text-align: center; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; }
-    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-    button:disabled { background: #9bbdff; }
-    #status { margin-top: 15px; text-align: center; font-size: 14px; font-weight: bold; }
-    .success { color: #2e7d32; }
-    .error { color: #d32f2f; }
+    :root {
+      --bg: #F5F7FA;
+      --card-bg: #FFFFFF;
+      --text: #2C3E50;
+      --muted: #7F8C8D;
+      --border: #E8ECEF;
+      
+      --w1-color: #6C9FF2;
+      --w2-color: #F26CA0;
+      --w3-color: #3FCBAE;
+      --w4-color: #F2B84B;
+      --w5-color: #9E7CF2;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--text);
+    }
+
+    .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px 16px; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr 300px;
+      gap: 16px;
+    }
+
+    @media (max-width: 1100px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg); border-radius: 12px;
+      padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      border: 1px solid var(--border);
+    }
+
+    .month-header {
+      font-size: 24px; font-weight: 800; font-style: italic; font-family: serif;
+      margin: 0; color: #1E293B;
+    }
+    .sub-tag { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
+
+    .selector-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .selector-row select {
+      padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border);
+      background: #FAFAFA; font-size: 13px; font-weight: 600; flex: 1; cursor: pointer;
+    }
+
+    .quote-box {
+      background: #FAF6E9; border-radius: 12px; padding: 20px; text-align: center;
+      border: 1px solid #F3E8C8; margin-top: 10px;
+    }
+    .quote-title { font-size: 26px; font-weight: 900; color: #0E6251; line-height: 1.1; }
+    .quote-sub { font-size: 12px; color: #116530; margin-top: 20px; font-style: italic; font-weight: 600; }
+
+    .center-section { display: flex; flex-direction: column; gap: 16px; }
+    .chart-header-title { font-size: 18px; font-weight: 800; text-align: center; margin: 0 0 12px; color: #1E293B; }
+    .chart-container { position: relative; width: 100%; height: 130px; }
+
+    .donut-row {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; text-align: center;
+    }
+    .donut-item { display: flex; flex-direction: column; align-items: center; }
+    .donut-svg { width: 60px; height: 60px; transform: rotate(-90deg); }
+    .donut-svg circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+    .donut-bg { stroke: #E2E8F0; }
+    .donut-val { transition: stroke-dashoffset 0.6s ease; }
+    .donut-text { font-size: 13px; font-weight: 800; margin-top: 4px; }
+
+    .right-stat-card { display: flex; flex-direction: column; gap: 16px; }
+    .daily-prog-badge {
+      background: #FDF2F8; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #FBCFE8;
+    }
+    .daily-prog-title { font-size: 10px; font-weight: 800; color: #BE185D; letter-spacing: 1px; }
+    .daily-prog-num { font-size: 32px; font-weight: 900; color: #9D174D; margin-top: 4px; }
+
+    .progress-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .prog-item-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
+    .prog-bar-track { height: 8px; background: #EDF2F7; border-radius: 4px; overflow: hidden; margin-top: 4px; }
+    .prog-bar-fill { height: 100%; background: var(--w1-color); border-radius: 4px; transition: width 0.4s ease; }
+
+    .matrix-card { margin-top: 16px; overflow-x: auto; }
+    .matrix-table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    .matrix-table th, .matrix-table td {
+      padding: 6px 4px; text-align: center; border: 1px solid var(--border); font-size: 11px;
+    }
+
+    .matrix-table th.week-header { font-weight: 800; font-style: italic; color: #fff; padding: 4px; }
+    .w1-bg { background-color: var(--w1-color); }
+    .w2-bg { background-color: var(--w2-color); }
+    .w3-bg { background-color: var(--w3-color); }
+    .w4-bg { background-color: var(--w4-color); }
+    .w5-bg { background-color: var(--w5-color); }
+
+    .matrix-table th.day-num-head { background: #FAFAFA; font-weight: 700; color: var(--text); }
+    .matrix-table td.habit-label {
+      text-align: left; padding: 8px 12px; font-weight: 700; font-size: 12px; min-width: 180px; background: #FFF;
+      position: sticky; left: 0; z-index: 2; box-shadow: 2px 0 5px rgba(0,0,0,0.03);
+    }
+
+    .chk-custom {
+      width: 18px; height: 18px; border-radius: 4px; border: 1px solid #CBD5E1;
+      appearance: none; -webkit-appearance: none; outline: none; cursor: pointer;
+      position: relative; background: #FFF; transition: all 0.15s ease; margin: 0 auto; display: block;
+    }
+    .chk-custom:hover { transform: scale(1.1); }
+    .chk-w1:checked { background-color: var(--w1-color); border-color: var(--w1-color); }
+    .chk-w2:checked { background-color: var(--w2-color); border-color: var(--w2-color); }
+    .chk-w3:checked { background-color: var(--w3-color); border-color: var(--w3-color); }
+    .chk-w4:checked { background-color: var(--w4-color); border-color: var(--w4-color); }
+    .chk-w5:checked { background-color: var(--w5-color); border-color: var(--w5-color); }
+
+    .chk-custom:checked::after {
+      content: '✓'; color: #FFF; font-size: 12px; font-weight: 900;
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    }
+
+    .add-habit-row { display: flex; gap: 8px; margin-top: 14px; }
+    .add-habit-row input {
+      flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 13px;
+    }
+    .add-habit-row button {
+      background: var(--w3-color); color: #fff; border: none; padding: 8px 16px; border-radius: 6px;
+      font-weight: 700; cursor: pointer; font-size: 13px;
+    }
+
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(255,255,255,0.85);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; z-index: 100;
+    }
+
+    footer { text-align: center; margin-top: 24px; font-size: 11px; color: var(--muted); }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h2>Submit Data to Google Sheet</h2>
-    
-    <form id="sheetForm">
-      <div class="form-group">
-        <label for="name">Name</label>
-        <input type="text" id="name" required placeholder="Enter your name">
+  <div id="loading" class="loading-overlay">Loading Dashboard…</div>
+
+  <div class="dashboard-container">
+    <div class="dashboard-grid">
+      
+      <!-- LEFT COLUMN -->
+      <div class="card">
+        <div class="month-header" id="displayMonthName">January</div>
+        <div class="sub-tag">HABIT TRACKER</div>
+
+        <div class="selector-row">
+          <select id="monthSelect"></select>
+          <select id="yearSelect"></select>
+        </div>
+
+        <div class="quote-box">
+          <div class="quote-title">trust<br>the<br>process</div>
+          <div class="quote-sub">I am...<br>Focused, intentional, and ready for the month ahead.</div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" required placeholder="Enter your email">
+      <!-- MIDDLE COLUMN -->
+      <div class="center-section">
+        <div class="card">
+          <div class="chart-header-title">All Your Habits in One Dashboard</div>
+          <div class="chart-container"><canvas id="mountainChart"></canvas></div>
+          <div class="chart-container" style="margin-top: 10px;"><canvas id="weeklyBarChart"></canvas></div>
+          <div class="donut-row" id="donutContainer"></div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="message">Message</label>
-        <textarea id="message" rows="4" required placeholder="Write your message..."></textarea>
+      <!-- RIGHT COLUMN -->
+      <div class="card right-stat-card">
+        <div class="daily-prog-badge">
+          <div class="daily-prog-title">DAILY PROGRESS</div>
+          <div class="daily-prog-num" id="overallPctText">0%</div>
+        </div>
+
+        <div>
+          <div class="sub-tag">PROGRESS BREAKDOWN</div>
+          <div id="progressFraction" style="font-size: 12px; font-weight: 800; margin-bottom: 8px;">0 / 0 Habit Checks</div>
+          <div class="progress-list" id="habitProgressList"></div>
+        </div>
       </div>
 
-      <button type="submit" id="submitBtn">Send to Sheet</button>
-    </form>
+    </div>
 
-    <div id="status"></div>
+    <!-- MAIN MATRIX -->
+    <div class="card matrix-card">
+      <table class="matrix-table">
+        <thead>
+          <tr id="weekHeaderRow"><th class="habit-label" style="z-index: 3;">DAILY HABITS</th></tr>
+          <tr id="dayLetterRow"><th class="habit-label" style="z-index: 3;"></th></tr>
+          <tr id="dayNumRow"><th class="habit-label" style="z-index: 3;"></th></tr>
+        </thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+
+      <div class="add-habit-row">
+        <input type="text" id="newHabitInput" placeholder="Enter new habit name...">
+        <button id="addHabitBtn">+ Add Habit</button>
+      </div>
+    </div>
+
+    <footer>© 2026 Prashant Patil — prashantpatilpp1008@gmail.com</footer>
   </div>
 
   <script>
-    // ⚠️ REPLACE THIS WITH YOUR DEPLOYED GOOGLE APPS SCRIPT WEB APP URL
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMMQgImJPqt-VgaxfWfAAWEcL9LM6ZMQtk7K9GVRqZD5EW1bM2m_5iftYDNpOQqe2gIg/exec";
+    // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP DEPLOYMENT URL HERE ⚠️
+    const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL";
 
-    const form = document.getElementById('sheetForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const statusDiv = document.getElementById('status');
+    var MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    var WEEK_COLORS = { 1: '#6C9FF2', 2: '#F26CA0', 3: '#3FCBAE', 4: '#F2B84B', 5: '#9E7CF2' };
 
-    // Handle Form Submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    var mountainChartObj = null;
+    var weeklyBarChartObj = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      initSelectors();
+      loadDashboardData();
+
+      document.getElementById('monthSelect').addEventListener('change', loadDashboardData);
+      document.getElementById('yearSelect').addEventListener('change', loadDashboardData);
+      document.getElementById('addHabitBtn').addEventListener('click', onAddHabit);
+    });
+
+    function initSelectors() {
+      var mSelect = document.getElementById('monthSelect');
+      var ySelect = document.getElementById('yearSelect');
+      var now = new Date();
+
+      MONTH_NAMES.forEach(function(m, idx) {
+        var opt = document.createElement('option');
+        opt.value = idx + 1;
+        opt.textContent = m;
+        if (idx === now.getMonth()) opt.selected = true;
+        mSelect.appendChild(opt);
+      });
+
+      for (var y = now.getFullYear() - 2; y <= now.getFullYear() + 2; y++) {
+        var opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === now.getFullYear()) opt.selected = true;
+        ySelect.appendChild(opt);
+      }
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'flex' : 'none';
+    }
+
+    // JSONP Implementation to bypass CORS on GitHub Pages
+    function fetchJSONP(params) {
+      return new Promise((resolve, reject) => {
+        const callbackName = 'jsonp_cb_' + Math.round(100000 * Math.random());
+        window[callbackName] = function(data) {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          resolve(data);
+        };
+
+        const script = document.createElement('script');
+        const url = new URL(API_URL);
+        Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
+        url.searchParams.append('callback', callbackName);
+
+        script.src = url.toString();
+        script.onerror = function() {
+          delete window[callbackName];
+          document.body.removeChild(script);
+          reject(new Error('JSONP Request failed'));
+        };
+        document.body.appendChild(script);
+      });
+    }
+
+    async function sendActionNoCors(params) {
+      const url = new URL(API_URL);
+      Object.keys(params).forEach(k => url.searchParams.append(k, params[k]));
+      await fetch(url.toString(), { mode: 'no-cors' });
+    }
+
+    async function loadDashboardData() {
+      showLoading(true);
+      var year = document.getElementById('yearSelect').value;
+      var month = document.getElementById('monthSelect').value;
       
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Sending...";
-      statusDiv.className = "";
-      statusDiv.innerText = "";
-
-      const payload = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        message: document.getElementById('message').value
-      };
+      document.getElementById('displayMonthName').textContent = MONTH_NAMES[month - 1];
 
       try {
-        // Send POST request to Google Apps Script
-        const response = await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Avoid CORS preflight block
-          body: JSON.stringify(payload)
+        var data = await fetchJSONP({ action: 'getDashboardData', year: year, month: month });
+        renderDashboard(data);
+      } catch (err) {
+        alert('Error fetching data: ' + err.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function renderDashboard(data) {
+      document.getElementById('overallPctText').textContent = data.overallPct + '%';
+      document.getElementById('progressFraction').textContent = data.totalCompletedChecks + ' / ' + data.totalPossibleChecks + ' Habit Checks Completed';
+
+      renderCharts(data);
+      renderDonuts(data.weeklyPcts);
+      renderRightProgressList(data.habitStats);
+      renderMatrix(data);
+    }
+
+    function renderCharts(data) {
+      var labels = data.days.map(d => d.dayNum);
+      var dailyPcts = data.dailyStats.map(ds => ds.pct);
+      var barColors = data.days.map(d => WEEK_COLORS[d.weekNum]);
+
+      var ctxM = document.getElementById('mountainChart').getContext('2d');
+      if (mountainChartObj) mountainChartObj.destroy();
+      mountainChartObj = new Chart(ctxM, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{ data: dailyPcts, borderColor: '#6C9FF2', backgroundColor: 'rgba(108, 159, 242, 0.2)', fill: true, tension: 0.45, pointRadius: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } } }
+      });
+
+      var ctxB = document.getElementById('weeklyBarChart').getContext('2d');
+      if (weeklyBarChartObj) weeklyBarChartObj.destroy();
+      weeklyBarChartObj = new Chart(ctxB, {
+        type: 'bar',
+        data: { labels: labels, datasets: [{ data: dailyPcts, backgroundColor: barColors, borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { display: false, min: 0, max: 100 } } }
+      });
+    }
+
+    function renderDonuts(weeklyPcts) {
+      var container = document.getElementById('donutContainer');
+      container.innerHTML = '';
+      weeklyPcts.forEach(function(wp) {
+        var color = WEEK_COLORS[wp.weekNum];
+        var circumference = 2 * Math.PI * 24;
+        var offset = circumference - (wp.pct / 100) * circumference;
+
+        var div = document.createElement('div');
+        div.className = 'donut-item';
+        div.innerHTML = `
+          <svg class="donut-svg" viewBox="0 0 60 60">
+            <circle class="donut-bg" cx="30" cy="30" r="24"></circle>
+            <circle class="donut-val" cx="30" cy="30" r="24" stroke="${color}" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"></circle>
+          </svg>
+          <div class="donut-text" style="color:${color}">${wp.pct}%</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderRightProgressList(habitStats) {
+      var container = document.getElementById('habitProgressList');
+      container.innerHTML = '';
+      habitStats.forEach(function(hs) {
+        var div = document.createElement('div');
+        div.innerHTML = `
+          <div class="prog-item-row"><span>${hs.habitName}</span><span>${hs.pct}%</span></div>
+          <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${hs.pct}%;"></div></div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function renderMatrix(data) {
+      var weekHeaderRow = document.getElementById('weekHeaderRow');
+      var dayLetterRow = document.getElementById('dayLetterRow');
+      var dayNumRow = document.getElementById('dayNumRow');
+      var body = document.getElementById('matrixBody');
+
+      weekHeaderRow.innerHTML = '<th class="habit-label" style="z-index: 3;">DAILY HABITS</th>';
+      dayLetterRow.innerHTML = '<th class="habit-label" style="z-index: 3;"></th>';
+      dayNumRow.innerHTML = '<th class="habit-label" style="z-index: 3;"></th>';
+      body.innerHTML = '';
+
+      for (var w = 1; w <= 5; w++) {
+        var daysInWeek = data.days.filter(d => d.weekNum === w).length;
+        if (daysInWeek > 0) {
+          var th = document.createElement('th');
+          th.className = 'week-header w' + w + '-bg';
+          th.colSpan = daysInWeek;
+          th.textContent = 'week ' + w;
+          weekHeaderRow.appendChild(th);
+        }
+      }
+
+      data.days.forEach(function(d) {
+        var thL = document.createElement('th');
+        thL.textContent = d.dayLetter;
+        dayLetterRow.appendChild(thL);
+
+        var thN = document.createElement('th');
+        thN.className = 'day-num-head';
+        thN.textContent = d.dayNum;
+        dayNumRow.appendChild(thN);
+      });
+
+      data.matrix.forEach(function(rowInfo, hIdx) {
+        var tr = document.createElement('tr');
+        var tdName = document.createElement('td');
+        tdName.className = 'habit-label';
+        tdName.innerHTML = `<span style="color:var(--muted); margin-right:6px;">${hIdx + 1}</span> ${rowInfo.habitName}`;
+        tr.appendChild(tdName);
+
+        rowInfo.statuses.forEach(function(isDone, dIdx) {
+          var dayObj = data.days[dIdx];
+          var tdChk = document.createElement('td');
+          var chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.className = 'chk-custom chk-w' + dayObj.weekNum;
+          chk.checked = isDone;
+
+          chk.addEventListener('change', async function() {
+            var val = chk.checked;
+            await sendActionNoCors({ action: 'toggleHabit', dateStr: dayObj.dateStr, habitName: rowInfo.habitName, status: val });
+            setTimeout(loadDashboardData, 400);
+          });
+
+          tdChk.appendChild(chk);
+          tr.appendChild(tdChk);
         });
 
-        const result = await response.json();
+        body.appendChild(tr);
+      });
+    }
 
-        if (result.status === 'success') {
-          statusDiv.className = "success";
-          statusDiv.innerText = "Data successfully sent to Google Sheet!";
-          form.reset();
-        } else {
-          throw new Error(result.message || "Something went wrong.");
-        }
-      } catch (err) {
-        statusDiv.className = "error";
-        statusDiv.innerText = "Error: " + err.message;
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Send to Sheet";
-      }
-    });
+    async function onAddHabit() {
+      var input = document.getElementById('newHabitInput');
+      var name = input.value.trim();
+      if (!name) return;
+
+      showLoading(true);
+      await sendActionNoCors({ action: 'addHabit', habitName: name });
+      input.value = '';
+      setTimeout(loadDashboardData, 500);
+    }
   </script>
-
 </body>
 </html>
