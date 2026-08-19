@@ -8,6 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 
   <!-- © 2026 Prashant Patil — prashantpatilpp1008@gmail.com -->
+  <!-- Deployed Web App URL: https://script.google.com/macros/s/AKfycbxMMQgImJPqt-VgaxfWfAAWEcL9LM6ZMQtk7K9GVRqZD5EW1bM2m_5iftYDNpOQqe2gIg/exec -->
 
   <style>
     :root{
@@ -217,7 +218,14 @@
       </div>
     </div>
 
-    <footer>© 2026 Prashant Patil — prashantpatilpp1008@gmail.com</footer>
+    <footer>
+      <div style="margin-bottom:8px;">
+        <span id="shareLink">🔗 script.google.com/…/exec</span>
+        <button id="copyLinkBtn" style="margin-left:8px;border:1px solid var(--border);background:#fff;
+          border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;color:var(--ink);">Copy Link</button>
+      </div>
+      © 2026 Prashant Patil — prashantpatilpp1008@gmail.com
+    </footer>
   </div>
 
   <div class="toast" id="toast"></div>
@@ -238,6 +246,7 @@
       'Progress System': '⚙️', 'Self-Development Framework': '🧩', 'Expense Tracking': '💰'
     };
     var EXPENSE_BOARD = 'Expense Tracking';
+    var DEPLOYED_URL = 'https://script.google.com/macros/s/AKfycbxMMQgImJPqt-VgaxfWfAAWEcL9LM6ZMQtk7K9GVRqZD5EW1bM2m_5iftYDNpOQqe2gIg/exec';
 
     function fmtDate(d) {
       var y = d.getFullYear(), m = ('0' + (d.getMonth() + 1)).slice(-2), dd = ('0' + d.getDate()).slice(-2);
@@ -258,6 +267,22 @@
         localStorage.removeItem('growthDashboardEmail');
         location.reload();
       });
+      var copyBtn = document.getElementById('copyLinkBtn');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(DEPLOYED_URL).then(function () { showToast('Link copied 📋'); });
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = DEPLOYED_URL;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('Link copied 📋');
+          }
+        });
+      }
 
       if (saved) {
         userEmail = saved;
