@@ -364,20 +364,45 @@
     }
 
     function buildSidebar() {
-      if (typeof google === 'undefined' || !google.script || !google.script.run) {
-        document.getElementById('loadingBox').style.display = 'none';
-        document.getElementById('boardContent').style.display = 'block';
-        document.getElementById('boardContent').innerHTML =
-          '<div class="empty-state" style="text-align:left;background:#FFF3F3;border:1px solid #FCD9D9;' +
-          'border-radius:14px;padding:18px;color:#B23A3A;">' +
-          '<b>This page isn\'t connected to Google Apps Script.</b><br><br>' +
-          'You\'re viewing it from somewhere other than your deployed Web App URL ' +
-          '(it must end in <code>/exec</code>) — for example, opening the raw GitHub ' +
-          'file directly instead of the Apps Script link. Open your deployed URL instead ' +
-          'and try again.' +
-          '</div>';
+      waitForGAS_(function (available) {
+        if (!available) {
+          document.getElementById('loadingBox').style.display = 'none';
+          document.getElementById('boardContent').style.display = 'block';
+          document.getElementById('boardContent').innerHTML =
+            '<div class="empty-state" style="text-align:left;background:#FFF3F3;border:1px solid #FCD9D9;' +
+            'border-radius:14px;padding:18px;color:#B23A3A;">' +
+            '<b>This page isn\'t connected to Google Apps Script.</b><br><br>' +
+            'You\'re viewing it from somewhere other than your deployed Web App URL ' +
+            '(it must end in <code>/exec</code>) — for example, opening the raw GitHub ' +
+            'file directly instead of the Apps Script link. Open your deployed URL instead, ' +
+            'or reload this page once.<br><br>' +
+            '<button id="retryConnBtn" style="margin-top:6px;border:none;background:#B23A3A;color:#fff;' +
+            'padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button>' +
+            '</div>';
+          var retryBtn = document.getElementById('retryConnBtn');
+          if (retryBtn) retryBtn.addEventListener('click', buildSidebar);
+          return;
+        }
+        loadBoardsFromServer_();
+      });
+    }
+
+    /**
+     * google.script.run is injected asynchronously by Apps Script; on a
+     * slow connection it can take a moment to become available right
+     * after the page loads. Poll briefly instead of failing immediately.
+     */
+    function waitForGAS_(callback, attemptsLeft) {
+      if (attemptsLeft === undefined) attemptsLeft = 20; // ~4 seconds total
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        callback(true);
         return;
       }
+      if (attemptsLeft <= 0) { callback(false); return; }
+      setTimeout(function () { waitForGAS_(callback, attemptsLeft - 1); }, 200);
+    }
+
+    function loadBoardsFromServer_() {
       google.script.run.withSuccessHandler(function (boards) {
         var all = boards.concat([EXPENSE_BOARD]);
         var sidebar = document.getElementById('sidebar');
