@@ -8,13 +8,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 
   <!-- © 2026 Prashant Patil — prashantpatilpp1008@gmail.com -->
-  <!-- Deployed Web App URL: https://script.google.com/macros/s/AKfycbxMMQgImJPqt-VgaxfWfAAWEcL9LM6ZMQtk7K9GVRqZD5EW1bM2m_5iftYDNpOQqe2gIg/exec -->
+  <!-- Deployed Web App URL: set DEPLOYED_URL in the script below to your own /exec link -->
 
   <style>
     :root{
-      --page:#F5F7FB; --card:#FFFFFF; --ink:#22252B; --muted:#7C8290; --border:#ECEEF3;
+      --page:#FAF6EF; --cream:#F6EFE1; --card:#FFFFFF; --ink:#22252B; --muted:#8A8478; --border:#EDE6D6;
       --blue:#6C9FF2; --blue-soft:#DCE7FB; --pink:#F26CA0; --mint:#3FCBAE; --gold:#F2B84B;
-      --violet:#9E7CF2; --red:#F25C5C; --shadow:0 6px 22px rgba(30,34,60,.07); --radius:18px;
+      --violet:#9E7CF2; --red:#F25C5C; --shadow:0 6px 22px rgba(60,50,30,.07); --radius:18px;
+      --wk1:#8CB4F0; --wk2:#EF8FB4; --wk3:#7FD8C0; --wk4:#F0C158; --wk5:#CBB2EE;
     }
     *{box-sizing:border-box;}
     html,body{margin:0;padding:0;background:var(--page);color:var(--ink);
@@ -109,6 +110,42 @@
     .heatmap-grid .cell{width:13px;height:13px;border-radius:3px;background:#ECEEF3;}
     .heatmap-grid .cell.l1{background:#B9EBD3;} .heatmap-grid .cell.l2{background:#6FDBA0;}
     .heatmap-grid .cell.l3{background:#33BE72;} .heatmap-grid .cell.l4{background:#0E9F52;}
+
+    /* ---- bento cards (photo-style layout) ---- */
+    .bento{display:grid;gap:16px;grid-template-columns:1fr;margin-bottom:16px;}
+    @media(min-width:900px){ .bento{grid-template-columns:1fr 1.7fr 0.9fr;} }
+    .card.cream{background:var(--cream);}
+
+    .title-card{display:flex;flex-direction:column;justify-content:space-between;background:var(--cream);}
+    .title-card .month-name{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:32px;margin:0;line-height:1;}
+    .title-card .sub{font-size:10.5px;letter-spacing:.15em;color:var(--muted);font-weight:700;margin-top:4px;}
+    .month-year-box{margin-top:16px;border:1.5px solid var(--gold);border-radius:12px;padding:8px 10px;
+      display:flex;gap:10px;background:#fff;}
+    .month-year-box .field{flex:1;}
+    .month-year-box label{display:block;font-size:9px;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:2px;}
+    .month-year-box select{width:100%;border:none;background:transparent;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;}
+
+    .trendbig-card h4{margin:0 0 6px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+    .trendbig-card canvas{max-height:150px;}
+
+    .bigprogress-card{background:linear-gradient(160deg,#FBE1EA,#F6D0DE);display:flex;flex-direction:column;
+      justify-content:center;align-items:center;text-align:center;}
+    .bigprogress-card h4{margin:0 0 6px;font-size:10.5px;letter-spacing:.1em;color:#9C5E76;font-weight:800;text-transform:uppercase;}
+    .bigprogress-card .num{font-size:42px;font-weight:800;color:#7A3654;}
+    .bigprogress-card .num span{font-size:18px;}
+
+    .quote-card{background:var(--cream);display:flex;flex-direction:column;justify-content:space-between;min-height:170px;}
+    .quote-card .quote{font-family:Georgia,'Times New Roman',serif;font-weight:800;font-size:24px;line-height:1.15;color:#2F5D45;}
+    .quote-card .sub{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.5;}
+
+    .weekbar-card h4{margin:0 0 6px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+    .weekbar-card canvas.bar{max-height:130px;}
+    .week-donuts{display:flex;gap:12px;overflow-x:auto;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);}
+    .week-donut{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:5px;}
+    .week-donut canvas{width:50px!important;height:50px!important;}
+    .week-donut b{font-size:12px;}
+    .week-donut span{font-size:9.5px;color:var(--muted);font-weight:700;text-transform:uppercase;}
+
     .heatmap-legend{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:9.5px;color:var(--muted);font-weight:600;}
     .heatmap-legend .cell{width:11px;height:11px;border-radius:3px;}
 
@@ -266,6 +303,8 @@
       'Progress System': '⚙️', 'Self-Development Framework': '🧩', 'Expense Tracking': '💰'
     };
     var EXPENSE_BOARD = 'Expense Tracking';
+    // 👉 Paste your own deployed Apps Script Web App URL here (must end in /exec).
+    // Get it from: Apps Script editor → Deploy → Manage deployments → copy the "Web app" URL.
     var DEPLOYED_URL = 'https://script.google.com/macros/s/AKfycbxMMQgImJPqt-VgaxfWfAAWEcL9LM6ZMQtk7K9GVRqZD5EW1bM2m_5iftYDNpOQqe2gIg/exec';
     var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -275,6 +314,55 @@
     }
     function fmtMonth(d) {
       return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+    }
+
+    /* =========================================================
+       API CLIENT — talks to the Apps Script Web App over plain
+       fetch() since this page is hosted on GitHub, not served by
+       Apps Script itself (so google.script.run is never available).
+       ========================================================= */
+    var API_BASE = DEPLOYED_URL;
+
+    function apiReady_() {
+      return API_BASE && API_BASE.indexOf('PASTE_YOUR_DEPLOYED') === -1;
+    }
+
+    function apiGet_(action, params, onSuccess, onError) {
+      if (!apiReady_()) { onError && onError({ message: 'DEPLOYED_URL is not set — see the comment above it in this file.' }); return; }
+      var qs = Object.keys(params || {})
+        .filter(function (k) { return params[k] !== undefined && params[k] !== null; })
+        .map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]); })
+        .join('&');
+      var url = API_BASE + '?action=' + encodeURIComponent(action) + (qs ? '&' + qs : '');
+      fetch(url)
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (data && data.error) { onError && onError({ message: data.error }); return; }
+          onSuccess && onSuccess(data);
+        })
+        .catch(function (err) { onError && onError(err); });
+    }
+
+    function apiPost_(action, params, onSuccess, onError) {
+      if (!apiReady_()) { onError && onError({ message: 'DEPLOYED_URL is not set — see the comment above it in this file.' }); return; }
+      fetch(API_BASE, {
+        method: 'POST',
+        // text/plain avoids a CORS preflight (Apps Script can't answer OPTIONS requests)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: action, params: params || {} })
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.json();
+        })
+        .then(function (data) {
+          if (data && data.error) { onError && onError({ message: data.error }); return; }
+          onSuccess && onSuccess(data);
+        })
+        .catch(function (err) { onError && onError(err); });
     }
 
     document.addEventListener('DOMContentLoaded', boot);
@@ -298,6 +386,10 @@
       var copyBtn = document.getElementById('copyLinkBtn');
       if (copyBtn) {
         copyBtn.addEventListener('click', function () {
+          if (DEPLOYED_URL.indexOf('PASTE_YOUR_DEPLOYED') > -1) {
+            showToast('Set DEPLOYED_URL in index.html first — see the comment above it.');
+            return;
+          }
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(DEPLOYED_URL).then(function () { showToast('Link copied 📋'); });
           } else {
@@ -312,12 +404,10 @@
     }
 
     /**
-     * IMPORTANT LOGIN FIX:
-     * We no longer block "Continue" on the server round-trip. We validate
-     * the email format client-side, immediately enter the app, and register
-     * the email with the backend in the background. If registerUser() is
-     * slow, fails, or google.script.run isn't ready yet for any reason,
-     * the user still gets in — registration just retries silently.
+     * We don't block "Continue" on the server round-trip. We validate the
+     * email format client-side, immediately enter the app, and register
+     * the email with the backend in the background over the API — if it's
+     * slow or fails, the user still gets in.
      */
     function doLogin() {
       var input = document.getElementById('loginEmail');
@@ -348,12 +438,10 @@
         return;
       }
 
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function () { /* registered, nothing to do */ })
-          .withFailureHandler(function (err) { console.log('Background registration failed: ' + err.message); })
-          .registerUser(userEmail);
-      }
+      apiPost_('registerUser', { email: userEmail },
+        function () { /* registered, nothing to do */ },
+        function (err) { console.log('Background registration failed: ' + err.message); }
+      );
     }
 
     function enterApp() {
@@ -364,46 +452,24 @@
     }
 
     function buildSidebar() {
-      waitForGAS_(function (available) {
-        if (!available) {
-          document.getElementById('loadingBox').style.display = 'none';
-          document.getElementById('boardContent').style.display = 'block';
-          document.getElementById('boardContent').innerHTML =
-            '<div class="empty-state" style="text-align:left;background:#FFF3F3;border:1px solid #FCD9D9;' +
-            'border-radius:14px;padding:18px;color:#B23A3A;">' +
-            '<b>This page isn\'t connected to Google Apps Script.</b><br><br>' +
-            'You\'re viewing it from somewhere other than your deployed Web App URL ' +
-            '(it must end in <code>/exec</code>) — for example, opening the raw GitHub ' +
-            'file directly instead of the Apps Script link. Open your deployed URL instead, ' +
-            'or reload this page once.<br><br>' +
-            '<button id="retryConnBtn" style="margin-top:6px;border:none;background:#B23A3A;color:#fff;' +
-            'padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button>' +
-            '</div>';
-          var retryBtn = document.getElementById('retryConnBtn');
-          if (retryBtn) retryBtn.addEventListener('click', buildSidebar);
-          return;
-        }
-        loadBoardsFromServer_();
-      });
-    }
-
-    /**
-     * google.script.run is injected asynchronously by Apps Script; on a
-     * slow connection it can take a moment to become available right
-     * after the page loads. Poll briefly instead of failing immediately.
-     */
-    function waitForGAS_(callback, attemptsLeft) {
-      if (attemptsLeft === undefined) attemptsLeft = 20; // ~4 seconds total
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        callback(true);
+      if (!apiReady_()) {
+        document.getElementById('loadingBox').style.display = 'none';
+        document.getElementById('boardContent').style.display = 'block';
+        document.getElementById('boardContent').innerHTML =
+          '<div class="empty-state" style="text-align:left;background:#FFF3F3;border:1px solid #FCD9D9;' +
+          'border-radius:14px;padding:18px;color:#B23A3A;">' +
+          '<b>DEPLOYED_URL is not set.</b><br><br>' +
+          'Open this index.html file, find the <code>DEPLOYED_URL</code> line near the top of ' +
+          'the &lt;script&gt;, and paste your Apps Script Web App URL there (it must end in ' +
+          '<code>/exec</code>). Get it from Apps Script → Deploy → Manage deployments.' +
+          '</div>';
         return;
       }
-      if (attemptsLeft <= 0) { callback(false); return; }
-      setTimeout(function () { waitForGAS_(callback, attemptsLeft - 1); }, 200);
+      loadBoardsFromServer_();
     }
 
     function loadBoardsFromServer_() {
-      google.script.run.withSuccessHandler(function (boards) {
+      apiGet_('getBoards', {}, function (boards) {
         var all = boards.concat([EXPENSE_BOARD]);
         var sidebar = document.getElementById('sidebar');
         sidebar.innerHTML = '';
@@ -419,7 +485,21 @@
           sidebar.appendChild(item);
         });
         switchBoard(all[0]);
-      }).withFailureHandler(function (err) { showToast('Error loading boards: ' + err.message); }).getBoards();
+      }, function (err) {
+        document.getElementById('loadingBox').style.display = 'none';
+        document.getElementById('boardContent').style.display = 'block';
+        document.getElementById('boardContent').innerHTML =
+          '<div class="empty-state" style="text-align:left;background:#FFF3F3;border:1px solid #FCD9D9;' +
+          'border-radius:14px;padding:18px;color:#B23A3A;">' +
+          '<b>Could not reach the dashboard API.</b><br><br>' + err.message + '<br><br>' +
+          'Check that DEPLOYED_URL is correct, the Web App is deployed with access set to ' +
+          '"Anyone", and you have internet access.<br><br>' +
+          '<button id="retryConnBtn" style="margin-top:6px;border:none;background:#B23A3A;color:#fff;' +
+          'padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button>' +
+          '</div>';
+        var retryBtn = document.getElementById('retryConnBtn');
+        if (retryBtn) retryBtn.addEventListener('click', buildSidebar);
+      });
     }
 
     function switchBoard(board) {
@@ -441,27 +521,35 @@
       var box = document.getElementById('boardContent');
       box.innerHTML =
         '<div class="board-title">' + BOARD_ICONS[activeBoard] + ' ' + activeBoard + '</div>' +
-        '<div class="month-nav">' +
-          '<button id="prevBtn">‹</button>' +
-          '<select id="monthSelect"></select>' +
-          '<select id="yearSelect"></select>' +
-          '<button id="nextBtn">›</button>' +
-          '<button class="today-btn" id="todayBtn">This Month</button>' +
-        '</div>' +
-        '<div class="top-row-grid">' +
-          '<div class="card progress-card"><h3>Month Progress</h3>' +
-            '<div class="row-top"><div class="big" id="bigPct">0%</div><div class="sub" id="progressSub">0 of 0 done</div></div>' +
-            '<div class="bar-track" id="barTrack"></div>' +
-            '<div class="stat-chips"><span class="chip done" id="chipDone">0 Done</span><span class="chip pending" id="chipPending">0 Pending</span><span class="chip total" id="chipTotal">0 Total</span></div>' +
+        '<div class="bento">' +
+          '<div class="card title-card">' +
+            '<div><p class="month-name" id="monthNameLabel">' + MONTH_NAMES[viewMonth - 1] + '</p><p class="sub">' + activeBoard.toUpperCase() + '</p></div>' +
+            '<div class="month-year-box">' +
+              '<div class="field"><label>MONTH</label><select id="monthSelect"></select></div>' +
+              '<div class="field"><label>YEAR</label><select id="yearSelect"></select></div>' +
+            '</div>' +
           '</div>' +
+          '<div class="card trendbig-card"><h4>Progress Grows Day by Day</h4><canvas id="trendChart"></canvas></div>' +
+          '<div class="card bigprogress-card"><h4>Month Progress</h4><div class="num" id="bigPct">0<span>%</span></div></div>' +
+        '</div>' +
+        '<div class="bento">' +
+          '<div class="card quote-card"><div class="quote">trust<br>the<br>process</div>' +
+            '<div class="sub">I am … focused, intentional, and<br>ready for the month ahead.</div></div>' +
+          '<div class="card weekbar-card"><h4>Every Checkmark Builds Momentum</h4>' +
+            '<canvas class="bar" id="weekBarChart"></canvas><div class="week-donuts" id="weeksRow"></div></div>' +
           '<div class="card streak-card">' +
-            '<div class="top-row"><h3 style="margin:0;">Streak</h3><div class="streak-badges"><span class="streak-badge fire" id="currentStreakBadge">🔥 0 day streak</span><span class="streak-badge best" id="bestStreakBadge">🏆 Best: 0</span></div></div>' +
+            '<div class="top-row"><h3 style="margin:0;">Streak</h3></div>' +
+            '<div class="streak-badges" style="margin-bottom:10px;"><span class="streak-badge fire" id="currentStreakBadge">🔥 0</span><span class="streak-badge best" id="bestStreakBadge">🏆 0</span></div>' +
             '<div class="heatmap-scroll"><div class="heatmap-grid" id="heatmapGrid"></div></div>' +
             '<div class="heatmap-legend"><span>Less</span><span class="cell" style="background:#ECEEF3"></span><span class="cell" style="background:#B9EBD3"></span><span class="cell" style="background:#6FDBA0"></span><span class="cell" style="background:#33BE72"></span><span class="cell" style="background:#0E9F52"></span><span>More</span></div>' +
           '</div>' +
         '</div>' +
         '<div class="card">' +
-          '<h3>Daily Checklist</h3>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px;">' +
+            '<h3 style="margin:0;">Daily Checklist</h3>' +
+            '<div class="stat-chips"><span class="chip done" id="chipDone">0 Done</span><span class="chip pending" id="chipPending">0 Pending</span><span class="chip total" id="chipTotal">0 Total</span></div>' +
+          '</div>' +
+          '<div class="bar-track" id="barTrack" style="margin-bottom:14px;"></div>' +
           '<div class="grid-scroll"><table class="gridtable" id="gridTable"></table></div>' +
           '<div class="add-task-card"><h3>Add Task</h3><div class="add-form">' +
             '<input type="date" id="taskDateInput">' +
@@ -490,21 +578,19 @@
       }
 
       document.getElementById('taskDateInput').value = fmtDate(now);
-      monthSel.addEventListener('change', function () { viewMonth = parseInt(monthSel.value, 10); loadMonthDashboard(); });
-      yearSel.addEventListener('change', function () { viewYear = parseInt(yearSel.value, 10); loadMonthDashboard(); });
-      document.getElementById('prevBtn').addEventListener('click', function () { shiftMonth(-1); });
-      document.getElementById('nextBtn').addEventListener('click', function () { shiftMonth(1); });
-      document.getElementById('todayBtn').addEventListener('click', function () {
-        var n = new Date(); viewYear = n.getFullYear(); viewMonth = n.getMonth() + 1;
-        monthSel.value = viewMonth; yearSel.value = viewYear;
+      monthSel.addEventListener('change', function () {
+        viewMonth = parseInt(monthSel.value, 10);
+        document.getElementById('monthNameLabel').textContent = MONTH_NAMES[viewMonth - 1];
         loadMonthDashboard();
       });
+      yearSel.addEventListener('change', function () { viewYear = parseInt(yearSel.value, 10); loadMonthDashboard(); });
       document.getElementById('addTaskBtn').addEventListener('click', addTask);
       document.getElementById('taskInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') addTask(); });
 
       loadMonthDashboard();
       loadStreak();
     }
+
 
     function shiftMonth(delta) {
       viewMonth += delta;
@@ -517,10 +603,10 @@
 
     function loadMonthDashboard() {
       document.getElementById('loadingBox').style.display = 'flex';
-      google.script.run
-        .withSuccessHandler(renderMonthDashboard)
-        .withFailureHandler(function (err) { showToast('Error: ' + err.message); document.getElementById('loadingBox').style.display = 'none'; })
-        .getMonthDashboardData(userEmail, activeBoard, viewYear, viewMonth);
+      apiGet_('getMonthDashboardData', { email: userEmail, board: activeBoard, year: viewYear, month: viewMonth },
+        renderMonthDashboard,
+        function (err) { showToast('Error: ' + err.message); document.getElementById('loadingBox').style.display = 'none'; }
+      );
     }
 
     function renderMonthDashboard(data) {
@@ -530,14 +616,78 @@
 
       var totalCells = 0, doneCells = 0;
       data.habitStats.forEach(function (h) { totalCells += h.total; doneCells += h.done; });
-      document.getElementById('bigPct').textContent = data.overallProgress + '%';
-      document.getElementById('progressSub').textContent = doneCells + ' of ' + totalCells + ' done this month';
+      document.getElementById('bigPct').innerHTML = data.overallProgress + '<span>%</span>';
       document.getElementById('chipDone').textContent = doneCells + ' Done';
       document.getElementById('chipPending').textContent = (totalCells - doneCells) + ' Pending';
       document.getElementById('chipTotal').textContent = totalCells + ' Total';
 
       renderStackedBar(data, totalCells);
+      renderTrendChart(data);
+      renderWeekBarChart(data);
+      renderWeeksRow(data);
       renderGridTable(data);
+    }
+
+    function renderTrendChart(data) {
+      destroyChart('trend');
+      var ctx = document.getElementById('trendChart');
+      if (!ctx) return;
+      charts.trend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.dayNums,
+          datasets: [{
+            data: data.dailyProgress,
+            borderColor: '#8CB4F0',
+            backgroundColor: 'rgba(140,180,240,.28)',
+            fill: true, tension: 0.45, pointRadius: 0, borderWidth: 2
+          }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } } }
+      });
+    }
+
+    function renderWeekBarChart(data) {
+      destroyChart('weekBar');
+      var ctx = document.getElementById('weekBarChart');
+      if (!ctx) return;
+      var colors = data.dayNums.map(function (_, i) {
+        var weekIdx = Math.floor(i / 7);
+        return WEEK_COLORS[weekIdx % WEEK_COLORS.length];
+      });
+      charts.weekBar = new Chart(ctx, {
+        type: 'bar',
+        data: { labels: data.dayNums, datasets: [{ data: data.dailyProgress, backgroundColor: colors, borderRadius: 5, maxBarThickness: 20 }] },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+            y: { min: 0, max: 100, ticks: { callback: function (v) { return v + '%'; }, font: { size: 9 } } }
+          }
+        }
+      });
+    }
+
+    function renderWeeksRow(data) {
+      var row = document.getElementById('weeksRow');
+      if (!row) return;
+      row.innerHTML = '';
+      data.weeks.forEach(function (w, i) {
+        var div = document.createElement('div');
+        div.className = 'week-donut';
+        var canvasId = 'weekDonut' + i;
+        div.innerHTML = '<canvas id="' + canvasId + '"></canvas><b>' + w.progress + '%</b><span>' + w.label + '</span>';
+        row.appendChild(div);
+      });
+      data.weeks.forEach(function (w, i) {
+        destroyChart('week' + i);
+        var ctx = document.getElementById('weekDonut' + i);
+        charts['week' + i] = new Chart(ctx, {
+          type: 'doughnut',
+          data: { datasets: [{ data: [w.progress, 100 - w.progress], backgroundColor: [WEEK_COLORS[i % WEEK_COLORS.length], '#EDE6D6'], borderWidth: 0 }] },
+          options: { cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+        });
+      });
     }
 
     function renderStackedBar(data, totalCells) {
@@ -562,7 +712,10 @@
 
     function loadStreak() {
       var todayStr = fmtDate(new Date());
-      google.script.run.withSuccessHandler(renderStreak).withFailureHandler(function (err) { showToast('Streak error: ' + err.message); }).getStreakData(userEmail, activeBoard, todayStr, 6);
+      apiGet_('getStreakData', { email: userEmail, board: activeBoard, dateStr: todayStr, weeks: 6 },
+        renderStreak,
+        function (err) { showToast('Streak error: ' + err.message); }
+      );
     }
 
     function renderStreak(streak) {
@@ -649,20 +802,20 @@
           chk.style.setProperty('--chk-color', color);
           chk.addEventListener('change', function () {
             var val = chk.checked;
-            google.script.run
-              .withFailureHandler(function (err) { chk.checked = !val; showToast('Sync failed: ' + err.message); })
-              .withSuccessHandler(function () { loadMonthDashboard(); loadStreak(); })
-              .toggleTask(cell.row, val);
+            apiPost_('toggleTask', { rowNum: cell.row, value: val },
+              function () { loadMonthDashboard(); loadStreak(); },
+              function (err) { chk.checked = !val; showToast('Sync failed: ' + err.message); }
+            );
           });
         } else {
           chk.className = 'gchk blank';
           chk.title = 'Add "' + name + '" for this date';
           chk.addEventListener('click', function (e) {
             e.preventDefault();
-            google.script.run
-              .withSuccessHandler(function () { showToast('Added for ' + dateStr); loadMonthDashboard(); })
-              .withFailureHandler(function (err) { showToast('Error: ' + err.message); })
-              .addTask(userEmail, activeBoard, dateStr, name, stat.category, stat.priority, 'Once', stat.time || '');
+            apiPost_('addTask', { email: userEmail, board: activeBoard, dateStr: dateStr, task: name, category: stat.category, priority: stat.priority, frequency: 'Once', time: stat.time || '' },
+              function () { showToast('Added for ' + dateStr); loadMonthDashboard(); },
+              function (err) { showToast('Error: ' + err.message); }
+            );
           });
         }
         td.appendChild(chk);
@@ -672,10 +825,10 @@
       wrap.querySelector('.edit-ic').addEventListener('click', function () { toggleEditRow(tr, name, stat); });
       wrap.querySelector('.del-ic').addEventListener('click', function () {
         if (!confirm('Delete "' + name + '" and all its checkmarks?')) return;
-        google.script.run
-          .withSuccessHandler(function () { showToast('Task deleted'); loadMonthDashboard(); loadStreak(); })
-          .withFailureHandler(function (err) { showToast('Error: ' + err.message); })
-          .deleteTaskAll(userEmail, activeBoard, name);
+        apiPost_('deleteTaskAll', { email: userEmail, board: activeBoard, taskName: name },
+          function () { showToast('Task deleted'); loadMonthDashboard(); loadStreak(); },
+          function (err) { showToast('Error: ' + err.message); }
+        );
       });
 
       return tr;
@@ -711,10 +864,10 @@
         var newPrio = editTr.querySelector('.e-prio').value;
         var newFreq = editTr.querySelector('.e-freq').value;
         if (!newName) { showToast('Task name required'); return; }
-        google.script.run
-          .withSuccessHandler(function (res) { if (res.ok) { showToast('Updated ' + res.updated + ' entries ✅'); loadMonthDashboard(); } else { showToast(res.error || 'Update failed'); } })
-          .withFailureHandler(function (err) { showToast('Error: ' + err.message); })
-          .updateTaskAll(userEmail, activeBoard, name, newName, newCat, newPrio, newFreq, newTime);
+        apiPost_('updateTaskAll', { email: userEmail, board: activeBoard, oldName: name, newName: newName, category: newCat, priority: newPrio, frequency: newFreq, time: newTime },
+          function (res) { if (res.ok) { showToast('Updated ' + res.updated + ' entries ✅'); loadMonthDashboard(); } else { showToast(res.error || 'Update failed'); } },
+          function (err) { showToast('Error: ' + err.message); }
+        );
       });
     }
 
@@ -726,8 +879,8 @@
       var priority = document.getElementById('priorityInput').value;
       var frequency = document.getElementById('frequencyInput').value;
       if (!name || !dateStr) { showToast('Enter a task name and date'); return; }
-      google.script.run
-        .withSuccessHandler(function (res) {
+      apiPost_('addTask', { email: userEmail, board: activeBoard, dateStr: dateStr, task: name, category: category, priority: priority, frequency: frequency, time: time },
+        function (res) {
           if (res.ok) {
             document.getElementById('taskInput').value = '';
             showToast(frequency === 'Daily' ? 'Daily task added 🔁' : 'Task added ✅');
@@ -739,9 +892,9 @@
             }
             loadMonthDashboard(); loadStreak();
           } else { showToast(res.error || 'Could not add task'); }
-        })
-        .withFailureHandler(function (err) { showToast('Error: ' + err.message); })
-        .addTask(userEmail, activeBoard, dateStr, name, category, priority, frequency, time);
+        },
+        function (err) { showToast('Error: ' + err.message); }
+      );
     }
 
     /* =========================================================
@@ -797,10 +950,10 @@
     function loadExpenseDashboard() {
       var monthStr = document.getElementById('monthPicker').value;
       document.getElementById('loadingBox').style.display = 'flex';
-      google.script.run
-        .withSuccessHandler(renderExpenseDashboard)
-        .withFailureHandler(function (err) { showToast('Error: ' + err.message); document.getElementById('loadingBox').style.display = 'none'; })
-        .getExpenseData(userEmail, monthStr);
+      apiGet_('getExpenseData', { email: userEmail, monthStr: monthStr },
+        renderExpenseDashboard,
+        function (err) { showToast('Error: ' + err.message); document.getElementById('loadingBox').style.display = 'none'; }
+      );
     }
 
     function renderExpenseDashboard(data) {
@@ -858,7 +1011,10 @@
       del.className = 'icon-btn del'; del.title = 'Delete'; del.textContent = '✕';
       del.addEventListener('click', function () {
         if (!confirm('Delete this expense?')) return;
-        google.script.run.withSuccessHandler(function () { showToast('Expense deleted'); loadExpenseDashboard(); }).withFailureHandler(function (err) { showToast('Error: ' + err.message); }).deleteExpense(e.row);
+        apiPost_('deleteExpense', { rowNum: e.row },
+          function () { showToast('Expense deleted'); loadExpenseDashboard(); },
+          function (err) { showToast('Error: ' + err.message); }
+        );
       });
 
       row.appendChild(editBtn); row.appendChild(del);
@@ -889,10 +1045,10 @@
         var newCat = form.querySelector('.e-cat').value;
         var newAmt = form.querySelector('.e-amt').value;
         var newMethod = form.querySelector('.e-method').value;
-        google.script.run
-          .withSuccessHandler(function (res) { if (res.ok) { showToast('Expense updated ✅'); loadExpenseDashboard(); } else { showToast(res.error || 'Update failed'); } })
-          .withFailureHandler(function (err) { showToast('Error: ' + err.message); })
-          .updateExpense(e.row, newDate, newDesc, newCat, newAmt, newMethod);
+        apiPost_('updateExpense', { rowNum: e.row, dateStr: newDate, description: newDesc, category: newCat, amount: newAmt, method: newMethod },
+          function (res) { if (res.ok) { showToast('Expense updated ✅'); loadExpenseDashboard(); } else { showToast(res.error || 'Update failed'); } },
+          function (err) { showToast('Error: ' + err.message); }
+        );
       });
     }
 
@@ -903,17 +1059,17 @@
       var amount = document.getElementById('expAmountInput').value;
       var method = document.getElementById('expMethodInput').value;
       if (!desc || !amount) { showToast('Enter description and amount'); return; }
-      google.script.run
-        .withSuccessHandler(function (res) {
+      apiPost_('addExpense', { email: userEmail, dateStr: dateStr, description: desc, category: category, amount: amount, method: method },
+        function (res) {
           if (res.ok) {
             document.getElementById('expDescInput').value = '';
             document.getElementById('expAmountInput').value = '';
             showToast('Expense added ✅');
             loadExpenseDashboard();
           } else { showToast(res.error || 'Could not add expense'); }
-        })
-        .withFailureHandler(function (err) { showToast('Error: ' + err.message); })
-        .addExpense(userEmail, dateStr, desc, category, amount, method);
+        },
+        function (err) { showToast('Error: ' + err.message); }
+      );
     }
 
     /* =========================================================
