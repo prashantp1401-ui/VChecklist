@@ -251,30 +251,14 @@
       font-size: 0.9rem;
     }
 
+    /* Interactive Checkbox Style */
     .gchk {
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid var(--border-color);
-      border-radius: 4px;
       cursor: pointer;
-      outline: none;
-      transition: all 0.2s ease;
-      position: relative;
-    }
-
-    .gchk:checked {
-      background-color: var(--chk-color, var(--primary-color));
-      border-color: var(--chk-color, var(--primary-color));
-    }
-
-    .gchk:checked::after {
-      content: '✓';
-      position: absolute;
-      color: white;
-      font-size: 12px;
-      top: -2px;
-      left: 3px;
+      width: 20px;
+      height: 20px;
+      accent-color: var(--chk-color, var(--primary-color));
+      margin: 0 auto;
+      display: block;
     }
 
     /* Heatmap / Streak */
@@ -350,8 +334,8 @@
       font-size: 0.8rem;
     }
 
-    .edit-inline .save-btn { background: var(--accent-green); color: white; border: none; padding: 4px 8px; border-radius: 4px; }
-    .edit-inline .cancel-btn { background: var(--text-muted); color: white; border: none; padding: 4px 8px; border-radius: 4px; }
+    .edit-inline .save-btn { background: var(--accent-green); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    .edit-inline .cancel-btn { background: var(--text-muted); color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
 
     /* Expense Rows */
     .expense-row {
@@ -789,17 +773,22 @@
         var catColor = CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
         for (var day = 1; day <= data.daysInMonth; day++) {
           var td = document.createElement('td');
-          var isChecked = h.checks && h.checks[day];
+          var isChecked = h.checks && (h.checks[day] === true || h.checks[day] === 'true');
+          
           var chk = document.createElement('input');
           chk.type = 'checkbox';
           chk.className = 'gchk';
-          chk.checked = !!isChecked;
+          chk.checked = isChecked;
           chk.style.setProperty('--chk-color', catColor);
-          (function (habitId, d) {
-            chk.addEventListener('change', function () {
-              toggleTaskCheck(habitId, d, this.checked);
+          
+          // Wire up event listener directly to input element
+          (function (habitId, dayNum, inputElem) {
+            inputElem.addEventListener('change', function (e) {
+              e.stopPropagation();
+              toggleTaskCheck(habitId, dayNum, inputElem.checked);
             });
-          })(h.id, day);
+          })(h.id, day, chk);
+
           td.appendChild(chk);
           tr.appendChild(td);
         }
